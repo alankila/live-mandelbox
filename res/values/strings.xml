@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Live Mandelbox</string>
+    <string name="app_description">
+        Displays Mandelbox fractal images on home screen.
+        The view rotates during page flip.
+    </string>
+
+    <string name="mandelbox_preferences">Live Mandelbox Preferences</string>
+    <string name="scale">Mandelbox scale</string>
+    <string name="scale_summary">Choose scale value</string>
+    <string name="dim">Effect quality</string>
+    <string name="dim_summary">Choose rendering resolution</string>
+    <string name="update_summary">Updating frequency</string>
+    <string name="update_frequency_summary">Time between image changes</string>
+    
+    <string name="next_update">Next update</string>
+    <string name="next_update_unseen">Ready!</string>
+    <string name="next_update_processing">Rendering...</string>
+</resources>
