@@ -10,7 +10,7 @@ static const float DISTANCE_FOG = -0.15f;
 static const float pi = M_PI;
 
 /* External parameters */
-int32_t seed = 1;
+uint32_t seed = 1;
 float scale = 2.0f;
 float invDim;
 
@@ -21,7 +21,7 @@ static float exposure;
 /* Return value [min, max[ */
 static float linearRand(float min, float max) {
 	seed = seed * 1664525 + 1013904223;
-	return (uint32_t) seed / 4294967296.0f * (max - min) + min;
+	return seed / 4294967296.0f * (max - min) + min;
 }
 
 static float mandelboxDistance(float3 pos) {
@@ -202,11 +202,11 @@ uchar4 __attribute__((kernel)) root(uint32_t x, uint32_t y) {
 	/* sRGB transformation */
 	finalColor = srgb(finalColor);
 	/* Dither output with triangular dithering */
-    finalColor += (linearRand(0.0f, 1.0f / 255.0f) - linearRand(0.0f, 1.0f / 255.0f));
-    /* Clamp to range */
-    finalColor = clamp(finalColor, 0.0f, 1.0f);
+	finalColor += rsRand(0.0f, 1.0f / 255.0f) - rsRand(0.0f, 1.0f / 255.0f);
+	/* Clamp to range */
+	finalColor = clamp(finalColor, 0.0f, 1.0f);
     
-    return rsPackColorTo8888(finalColor);
+	return rsPackColorTo8888(finalColor);
 }
 
 /* Build approximation of suitable brightness to select for the image
