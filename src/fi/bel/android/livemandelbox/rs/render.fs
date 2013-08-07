@@ -5,12 +5,12 @@ static const int BADNESS_RAYS_SQRT = (1 << 6);
 static const int BADNESS_RAYS = (BADNESS_RAYS_SQRT * BADNESS_RAYS_SQRT);
 static const float INVSQRT3 = 0.5773502691896258f;
 static const float3 LIGHT_DIST = { 0.0f, 0.0f, 0.1f };
-static const int ITERATIONS = 16;
+static const int ITERATIONS = 18;
 static const float DISTANCE_FOG = -0.15f;
 static const float pi = M_PI;
 
 /* External parameters */
-uint32_t seed = 1;
+int32_t seed = 1; /* is int32_t because we set this from java. Used as uint32_t everywhere. */
 float scale = 2.0f;
 float invDim;
 
@@ -20,8 +20,8 @@ static float exposure;
 
 /* Return value [min, max[ */
 static float linearRand(float min, float max) {
-	seed = seed * 1664525 + 1013904223;
-	return seed / 4294967296.0f * (max - min) + min;
+	seed = (uint32_t) seed * 1664525 + 1013904223;
+	return (uint32_t) seed / 4294967296.0f * (max - min) + min;
 }
 
 static float mandelboxDistance(float3 pos) {
@@ -61,11 +61,10 @@ static float3 mandelboxColor(float3 pos) {
 static float intersectMandelbox(const float3 pos, const float3 dir, float t, const float detail) {
     while (t < 10.0f) {
         float dt = mandelboxDistance(pos + dir * t);
-        t += dt;
-
-        /* World scale small enough? */
+        t += dt * 0.5f;
+        /* Are we close enough to the object? (estimated distance is now 0.5 dt) */
         if (dt < detail * t) {
-        	/* Cancel out overstep. This helps avoid artifacts like ray slightly passing through a thin wall */
+            /* Step back to estimated midpoint between detail distance and object */
         	t -= detail * t - dt;
             break;
         }
@@ -120,12 +119,12 @@ static float3 computeMandelboxColor(float3 pos, const float3 dir, const float t,
 	float3 lightDir = normalize(lightPos - pos);
     float dt = t * detail;
 
-    float dx1 = mandelboxDistance(pos + (float3) { dt * -0.707f, 0, 0 });
-    float dx2 = mandelboxDistance(pos + (float3) { dt * +0.707f, 0, 0 });
-    float dy1 = mandelboxDistance(pos + (float3) { 0, dt * -0.707f, 0 });
-    float dy2 = mandelboxDistance(pos + (float3) { 0, dt * +0.707f, 0 });
-    float dz1 = mandelboxDistance(pos + (float3) { 0, 0, dt * -0.707f });
-    float dz2 = mandelboxDistance(pos + (float3) { 0, 0, dt * +0.707f });
+    float dx1 = mandelboxDistance(pos + (float3) { dt * -0.5f, 0, 0 });
+    float dx2 = mandelboxDistance(pos + (float3) { dt * +0.5f, 0, 0 });
+    float dy1 = mandelboxDistance(pos + (float3) { 0, dt * -0.5f, 0 });
+    float dy2 = mandelboxDistance(pos + (float3) { 0, dt * +0.5f, 0 });
+    float dz1 = mandelboxDistance(pos + (float3) { 0, 0, dt * -0.5f });
+    float dz2 = mandelboxDistance(pos + (float3) { 0, 0, dt * +0.5f });
     float3 norm = normalize((float3) { dx2, dy2, dz2 } - (float3) { dx1, dy1, dz1 });
 
     /* Real world-space AO estimate */
@@ -137,9 +136,9 @@ static float3 computeMandelboxColor(float3 pos, const float3 dir, const float t,
             continue;
         }
 
-		/* Build ambient occlusion estimate. How much AO is right? */
+		/* Build ambient occlusion estimate. How much AO is right? The factor 0.5 is matter of taste. */
         float aoshade = computeShade(pos, aovec, 1.0f, 1.0f, dt);
-        ao += aoshade;
+        ao += aoshade * 0.5f;
         
     	if (ao >= 1.0f) {
     		ao = 1.0f;
@@ -169,7 +168,7 @@ static float3 computeMandelboxColor(float3 pos, const float3 dir, const float t,
 /* Return world color from pos to direction starting from distance at resolution indicated by detail */
 static float3 render_world(float3 pos, float3 dir, float distance, float detail) {
     const float3 fog = (float3) { 0.035f, 0.05f, 0.075f }; // * (dot(dir, LIGHT) * .5f + .5f);
-    distance = intersectMandelbox(pos, dir, distance, 1.414f * detail);
+    distance = intersectMandelbox(pos, dir, distance, detail);
     if (distance < 10.0f) {
         const float3 color = computeMandelboxColor(pos, dir, distance, detail);
         return mix(fog, color, exp(distance * DISTANCE_FOG));
@@ -273,8 +272,6 @@ void randomize_position() {
     rot_x = linearRand(-pi, pi);
     rsSendToClient(0, &rot_x, sizeof(rot_x));
 
-    /* Work out the bounding box of the fractal within ~0.1 unit accuracy
-     * using multiple probe rays hoping one of them hits the object... */
     float boundingbox;
     if (scale < 0) {
         boundingbox = 2;
@@ -291,7 +288,8 @@ void randomize_position() {
         	linearRand(-boundingbox, boundingbox),
         	linearRand(-boundingbox, boundingbox)
         };
-        /* Reject positions that seem to be very close / inside the object */
+        /* Reject positions that seem to be very close / inside the object, or where the
+         * light source would end up close/inside the object */
         if (mandelboxDistance(trialPos) < 0.02f || mandelboxDistance(trialPos + LIGHT_DIST) < 0.02f) {
             continue;
         }
