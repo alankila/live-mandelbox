@@ -87,6 +87,12 @@ static float computeShade(float3 pos, float3 dir, float maxDist, float cone_rati
     float shade = 1.0f;
     while (1) {
         float dt = mandelboxDistance(pos + dir * t);
+        /* Don't overstep in light calculation */
+        if (t >= maxDist - dt) {
+	       	break;
+	    }
+		
+		/* How wide is the projected light cone? */
         float lightcone = cone_ratio * t;
         
         /* This formula is ad-hoc, it's chosen because it shows attractive properties. */
@@ -100,15 +106,12 @@ static float computeShade(float3 pos, float3 dir, float maxDist, float cone_rati
         
         /* Termination condition: we seem to have
          * hit object. (We could collect radiosity now.) */
-        if (dt < start_length * 0.25f) {
+        if (dt < start_length * 0.5f) {
             shade = lightcone;
             break;
         }
         
         t += dt;
-        if (t >= maxDist) {
-	       	break;
-	    }
     }
     return shade;
 }
@@ -154,7 +157,7 @@ static float3 computeMandelboxColor(float3 pos, const float3 dir, const float t,
     const float3 microplane = normalize(lightDir - dir);
     float specular = max(dot(microplane, norm), 0.0f);
 
-    float shadows = computeShade(pos, lightDir, length(lightPos - pos), 0.02f, dt);
+    float shadows = computeShade(pos, lightDir, length(lightPos - pos), 0.1f, dt);
 
     //ao = 1.0f;
     //shadows = 1.0f;
@@ -245,7 +248,7 @@ static float estimate_badness(float3 pos) {
         float dx = sin(arg) * r;
         float dy = cos(arg) * r;
         float3 dir = project_cylindrical(dx, dy);
-        float t = intersectMandelbox(pos, dir, 0.01f, 1.414f / BADNESS_RAYS_SQRT);
+        float t = intersectMandelbox(pos, dir, 0.01f, 1.0f / BADNESS_RAYS_SQRT);
 
         /* Maintain reasonableish distance to fractal */
         distance_badness += 0.2f / t + t;
