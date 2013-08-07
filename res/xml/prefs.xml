@@ -2,7 +2,7 @@
     android:title="@string/mandelbox_preferences" >
 
    <ListPreference
-        android:defaultValue="-2.5"
+        android:defaultValue="-1.732051"
         android:entries="@array/scale_strings"
         android:entryValues="@array/scale_values"
         android:key="scale"
