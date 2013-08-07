@@ -194,7 +194,7 @@ static float3 srgb(const float3 color) {
 uchar4 __attribute__((kernel)) root(uint32_t x, uint32_t y) {
 	float3 dir = project_cylindrical(x * invDim - 0.5f, y * invDim - 0.5f);
 
-	float3 finalColor = render_world(pos, dir, 0.1f, invDim);
+	float3 finalColor = render_world(pos, dir, 0.02f, invDim);
 
 	/* Fix the color between the exposure range */
 	finalColor = clamp(finalColor * exposure, 0.0f, 1.0f);
