@@ -18,14 +18,8 @@ static float rot_x;
 static float3 pos;
 static float exposure;
 
-/* Return value [min, max[ */
-static float linearRand(float min, float max) {
-	seed = (uint32_t) seed * 1664525 + 1013904223;
-	return (uint32_t) seed / 4294967296.0f * (max - min) + min;
-}
-
-static float mandelboxDistance(float3 pos) {
-    float4 s = { scale, scale, scale, fabs(scale) };
+static float mbresult;
+void mb(float3 pos) {
     float4 iter = { pos.x, pos.y, pos.z, 1.0f };
     float4 pos0 = { pos.x, pos.y, pos.z, 1.0f };
     
@@ -33,6 +27,26 @@ static float mandelboxDistance(float3 pos) {
         iter.xyz = clamp(iter.xyz, -1.0f, 1.0f) * 2.0f - iter.xyz;
         float f = 1.0f / clamp(dot(iter.xyz, iter.xyz), 0.25f, 1.0f);
         iter = iter * scale * f + pos0;
+    }
+
+    mbresult = length(iter.xyz) / iter.w;
+    rsSendToClient(3, &mbresult, sizeof(mbresult));
+}
+
+/* Return value [min, max[ */
+static float linearRand(float min, float max) {
+	seed = (uint32_t) seed * 1664525 + 1013904223;
+	return (uint32_t) seed / 4294967296.0f * (max - min) + min;
+}
+
+static float mandelboxDistance(float3 pos) {
+    float4 iter = { pos.x, pos.y, pos.z, 1.0f };
+    float4 pos0 = { pos.x, pos.y, pos.z, 1.0f };
+    
+    for (int i = 0; i < ITERATIONS; i ++) {
+        iter.xyz = clamp(iter.xyz, -1.0f, 1.0f) * 2.0f - iter.xyz;
+        float f = clamp(dot(iter.xyz, iter.xyz), 0.25f, 1.0f);
+        iter = iter * scale / f + pos0;
     }
 
     return length(iter.xyz) / iter.w;
