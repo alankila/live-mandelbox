@@ -61,9 +61,9 @@ static float3 mandelboxColor(float3 pos) {
 static float intersectMandelbox(const float3 pos, const float3 dir, float t, const float detail) {
     while (t < 10.0f) {
         float dt = mandelboxDistance(pos + dir * t);
-        t += dt;
+        t += dt * 0.5f;
         if (dt < detail * t) {
-        	/* Step back slightly to stabilize the distance to detail * t */
+        	/* Step back slightly to stabilize the distance to detail * t + dt * .5 */
         	t -= detail * t - dt;
             break;
         }
