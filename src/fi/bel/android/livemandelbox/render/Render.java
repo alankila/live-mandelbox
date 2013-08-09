@@ -47,36 +47,6 @@ public class Render {
 
 	private static final String TAG = Render.class.getSimpleName();
 
-	/*
-	private static double clamp(double x, double min, double max) {
-		if (x < min) {
-			return min;
-		}
-		if (x > max) {
-			return max;
-		}
-		return x;
-	}
-
-	public static double mb(Float3 pos, double scale) {
-	    Double4 iter = new Double4(pos.x, pos.y, pos.z, 1);
-	    Double4 pos0 = new Double4(pos.x, pos.y, pos.z, 1);
-
-	    for (int i = 0; i < 18; i ++) {
-	    	iter.x = clamp(iter.x, -1, 1) * 2 - iter.x;
-	    	iter.y = clamp(iter.y, -1, 1) * 2 - iter.y;
-	    	iter.z = clamp(iter.z, -1, 1) * 2 - iter.z;
-	        double f = 1 / clamp(iter.x * iter.x + iter.y * iter.y + iter.z * iter.z, 0.25, 1.0);
-	        iter.x = iter.x * scale * f + pos0.x;
-	        iter.y = iter.y * scale * f + pos0.y;
-	        iter.z = iter.z * scale * f + pos0.z;
-	        iter.w = iter.w * scale * f + pos0.w;
-	    }
-
-	    double result = iter.x * iter.x + iter.y * iter.y + iter.z * iter.z;
-	    return Math.sqrt(result) / iter.w;
-	}*/
-
 	private final int dim;
 	private final RenderScript rs;
 	private final ScriptC_render render;

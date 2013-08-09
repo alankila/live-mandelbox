@@ -18,21 +18,6 @@ static float rot_x;
 static float3 pos;
 static float exposure;
 
-static float mbresult;
-void mb(float3 pos) {
-    float4 iter = { pos.x, pos.y, pos.z, 1.0f };
-    float4 pos0 = { pos.x, pos.y, pos.z, 1.0f };
-    
-    for (int i = 0; i < ITERATIONS; i ++) {
-        iter.xyz = clamp(iter.xyz, -1.0f, 1.0f) * 2.0f - iter.xyz;
-        float f = 1.0f / clamp(dot(iter.xyz, iter.xyz), 0.25f, 1.0f);
-        iter = iter * scale * f + pos0;
-    }
-
-    mbresult = length(iter.xyz) / iter.w;
-    rsSendToClient(3, &mbresult, sizeof(mbresult));
-}
-
 /* Return value [min, max[ */
 static float linearRand(float min, float max) {
 	seed = (uint32_t) seed * 1664525 + 1013904223;
@@ -40,13 +25,14 @@ static float linearRand(float min, float max) {
 }
 
 static float mandelboxDistance(float3 pos) {
-    float4 iter = { pos.x, pos.y, pos.z, 1.0f };
-    float4 pos0 = { pos.x, pos.y, pos.z, 1.0f };
+	float4 s = { scale, scale, scale, fabs(scale) };
+	float4 pos0 = { pos.x, pos.y, pos.z, 1.0f };
+    float4 iter = pos0;
     
     for (int i = 0; i < ITERATIONS; i ++) {
         iter.xyz = clamp(iter.xyz, -1.0f, 1.0f) * 2.0f - iter.xyz;
         float f = clamp(dot(iter.xyz, iter.xyz), 0.25f, 1.0f);
-        iter = iter * scale / f + pos0;
+        iter = iter * s / f + pos0;
     }
 
     return length(iter.xyz) / iter.w;
@@ -75,10 +61,9 @@ static float3 mandelboxColor(float3 pos) {
 static float intersectMandelbox(const float3 pos, const float3 dir, float t, const float detail) {
     while (t < 10.0f) {
         float dt = mandelboxDistance(pos + dir * t);
-        t += dt * 0.5f;
-        /* Are we close enough to the object? (estimated distance is now 0.5 dt) */
+        t += dt;
         if (dt < detail * t) {
-            /* Step back to estimated midpoint between detail distance and object */
+        	/* Step back slightly to stabilize the distance to detail * t */
         	t -= detail * t - dt;
             break;
         }
@@ -102,14 +87,18 @@ static float computeShade(float3 pos, float3 dir, float maxDist, float cone_rati
     while (1) {
         float dt = mandelboxDistance(pos + dir * t);
         /* Don't overstep in light calculation */
-        if (t >= maxDist - dt) {
+        if (t > maxDist - dt) {
 	       	break;
 	    }
 		
 		/* How wide is the projected light cone? */
         float lightcone = cone_ratio * t;
         
-        /* This formula is ad-hoc, it's chosen because it shows attractive properties. */
+        /* This formula is ad-hoc, it's chosen because it shows attractive properties.
+         * lightcone reduces any shading achieved from more distant objects
+         * dt/lightdone is the term that approximates the degree of soft-shadowing
+         * start_length adds a small bias that avoids detecting hard shadows while
+         * very close to object */
         float shade_factor = lightcone + (dt + start_length) / lightcone;
         shade = min(shade, shade_factor);
 
@@ -136,14 +125,14 @@ static float3 computeMandelboxColor(float3 pos, const float3 dir, const float t,
 	float3 lightDir = normalize(lightPos - pos);
     float dt = t * detail;
 
-    float dx1 = mandelboxDistance(pos + (float3) { dt * -0.5f, 0, 0 });
-    float dx2 = mandelboxDistance(pos + (float3) { dt * +0.5f, 0, 0 });
-    float dy1 = mandelboxDistance(pos + (float3) { 0, dt * -0.5f, 0 });
-    float dy2 = mandelboxDistance(pos + (float3) { 0, dt * +0.5f, 0 });
-    float dz1 = mandelboxDistance(pos + (float3) { 0, 0, dt * -0.5f });
-    float dz2 = mandelboxDistance(pos + (float3) { 0, 0, dt * +0.5f });
-    float3 norm = normalize((float3) { dx2, dy2, dz2 } - (float3) { dx1, dy1, dz1 });
-
+    float dx1 = mandelboxDistance(pos - (float3) { dt * 0.5f, 0, 0 });
+    float dx2 = mandelboxDistance(pos + (float3) { dt * 0.5f, 0, 0 });
+    float dy1 = mandelboxDistance(pos - (float3) { 0, dt * 0.5f, 0 });
+    float dy2 = mandelboxDistance(pos + (float3) { 0, dt * 0.5f, 0 });
+    float dz1 = mandelboxDistance(pos - (float3) { 0, 0, dt * 0.5f });
+    float dz2 = mandelboxDistance(pos + (float3) { 0, 0, dt * 0.5f });
+    float3 norm = normalize((float3) { dx2 - dx1, dy2 - dy1, dz2 - dz1 });
+    
     /* Real world-space AO estimate */
     float ao = 0.0f;
     for (int i = 0; i < 8; i ++) {
@@ -184,7 +173,7 @@ static float3 computeMandelboxColor(float3 pos, const float3 dir, const float t,
 
 /* Return world color from pos to direction starting from distance at resolution indicated by detail */
 static float3 render_world(float3 pos, float3 dir, float distance, float detail) {
-    const float3 fog = (float3) { 0.035f, 0.05f, 0.075f }; // * (dot(dir, LIGHT) * .5f + .5f);
+    const float3 fog = (float3) { 0.035f, 0.05f, 0.075f } * (dot(dir, normalize(LIGHT_DIST)) * .5f + .5f);
     distance = intersectMandelbox(pos, dir, distance, detail);
     if (distance < 10.0f) {
         const float3 color = computeMandelboxColor(pos, dir, distance, detail);
