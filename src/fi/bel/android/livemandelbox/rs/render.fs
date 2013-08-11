@@ -5,9 +5,8 @@ static const int BADNESS_RAYS_SQRT = (1 << 6);
 static const int BADNESS_RAYS = (BADNESS_RAYS_SQRT * BADNESS_RAYS_SQRT);
 static const float INVSQRT3 = 0.5773502691896258f;
 static const float3 LIGHT_DIST = { 0.0f, 0.0f, 0.1f };
-static const int ITERATIONS = 18;
+static const int ITERATIONS = 20;
 static const float DISTANCE_FOG = -0.15f;
-static const float pi = M_PI;
 
 /* External parameters */
 int32_t seed = 1; /* is int32_t because we set this from java. Used as uint32_t everywhere. */
@@ -188,7 +187,7 @@ static float3 render_world(float3 pos, float3 dir, float distance, float detail)
 /* Return normalized vector in the current field of view in cylindrical projection */
 static float3 project_cylindrical(float dx, float dy) {
     /* The view angle is 45 degrees in both directions, or pi/4. */
-    float rot = rot_x + pi / 4.0f * dx;
+    float rot = rot_x + M_PI / 4.0f * dx;
     float factor = rsqrt(1 + dy * dy);
     return (float3) { sin(rot), cos(rot), -dy } * factor;
 }
@@ -249,7 +248,7 @@ static float estimate_badness(float3 pos) {
     for (int d = 0; d < BADNESS_RAYS; d ++) {
     	/* We construct archimedes's spiral here as a sampling pattern. */
         float r = (float) d / (BADNESS_RAYS - 1);
-        float arg = (float) d / (BADNESS_RAYS_SQRT - 0.5f) * 2 * pi;
+        float arg = (float) d / (BADNESS_RAYS_SQRT - 0.5f) * 2 * M_PI;
         float dx = sin(arg) * r;
         float dy = cos(arg) * r;
         float3 dir = project_cylindrical(dx, dy);
@@ -277,7 +276,7 @@ static float estimate_badness(float3 pos) {
 
 /* Find a good starting position */
 void randomize_position() {
-    rot_x = linearRand(-pi, pi);
+    rot_x = linearRand(-M_PI, M_PI);
     rsSendToClient(0, &rot_x, sizeof(rot_x));
 
     float boundingbox;
