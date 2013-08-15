@@ -56,7 +56,7 @@ static float3 mandelboxColor(float3 pos) {
     iter_out.x = pow(iter_out.y, 10.0f);
     iter_out.y = pow(iter_out.y, 20.0f);
     iter_out.z = pow(iter_out.z, 1.0f/10.0f);
-    return .5f + .5f * normalize(iter_out * iter_avg);
+    return .5f * (iter_out + (1.0f + normalize(iter_avg)) * .5f);
 }
 
 static float intersectMandelbox(const float3 pos, const float3 dir, float t, const float detail) {
@@ -64,7 +64,7 @@ static float intersectMandelbox(const float3 pos, const float3 dir, float t, con
         float dt = mandelboxDistance(pos + dir * t);
         t += dt * 0.5f;
         if (dt < detail * t) {
-        	/* Step back slightly to stabilize the distance to detail * t + dt * .5 */
+        	/* Step back slightly to stabilize the distance to detail * t - dt * .5 */
         	t -= detail * t - dt;
             break;
         }
@@ -257,7 +257,7 @@ static float estimate_badness(float3 pos) {
         /* Maintain reasonableish distance to fractal */
         distance_badness += 0.2f / t + t;
         /* Penalize for changes in t (want smooth surfaces) */
-        distance_badness += fabs(max(previous_t / t, t / previous_t) - 1.2f);
+        distance_badness += fabs(max(previous_t / t, t / previous_t) - 1.1f);
         previous_t = t;
 
         if (t < 10.0f) {
