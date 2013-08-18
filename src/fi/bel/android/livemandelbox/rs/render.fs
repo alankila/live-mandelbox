@@ -40,8 +40,7 @@ static float mandelboxDistance(float3 pos) {
 static float3 mandelboxColor(float3 pos) {
     float3 iter = pos;
     float3 iter_out = { 0.0f, 0.0f, 1.0f };
-	float3 iter_avg = iter;
-	float3 iter_min = iter;
+	float3 iter_avg = normalize(iter);
 
     for (int i = 0; i < ITERATIONS; i ++) {
         iter = clamp(iter, -1.f, 1.f) * 2.0f - iter;
@@ -50,10 +49,7 @@ static float3 mandelboxColor(float3 pos) {
 
 		iter_out.y += f;
 		iter_out.z = min(iter_out.z, f);
-		iter_avg += iter;
-		if (length(iter) < length(iter_min)) {
-			iter_min = iter;
-		}
+		iter_avg += normalize(iter);
     }
 	iter_out.y /= ITERATIONS;
 	iter_out -= 0.25f;
@@ -61,9 +57,7 @@ static float3 mandelboxColor(float3 pos) {
     iter_out.x = pow(iter_out.y, 10.0f);
     iter_out.y = pow(iter_out.y, 20.0f);
     iter_out.z = pow(iter_out.z, 1.0f/10.0f);
-    return (iter_out
-    	+ (1.0f + normalize(iter_avg)) * .5f
-    	+ (1.0f + normalize(iter_min)) * .5f) / 3.0f;
+    return .5f + .5f * normalize(iter_out * iter_avg);
 }
 
 static float intersectMandelbox(const float3 pos, const float3 dir, float t, const float detail) {
