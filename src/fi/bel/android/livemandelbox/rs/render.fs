@@ -43,7 +43,7 @@ static float3 mandelboxColor(float3 pos) {
 	float3 iter_avg = normalize(iter);
 
     for (int i = 0; i < ITERATIONS; i ++) {
-        iter = clamp(iter, -1.f, 1.f) * 2.0f - iter;
+        iter = clamp(iter, -1.0f, 1.0f) * 2.0f - iter;
         float f = clamp(dot(iter, iter), 0.25f, 1.0f);
         iter = iter * scale / f + pos;
 
