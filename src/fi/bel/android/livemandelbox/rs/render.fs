@@ -63,12 +63,12 @@ static float3 mandelboxColor(float3 pos) {
 static float intersectMandelbox(const float3 pos, const float3 dir, float t, const float detail) {
     while (t < 10.0f) {
         float dt = mandelboxDistance(pos + dir * t);
-        t += dt * 0.5f;
         if (dt < detail * t) {
-        	/* Step back slightly to stabilize the distance to detail * t - dt * .5 */
+        	/* Step back slightly to stabilize the distance to detail * t */
         	t -= detail * t - dt;
             break;
         }
+        t += dt * 0.5f;
     }
 
     return t;
@@ -169,8 +169,8 @@ static float3 computeMandelboxColor(float3 pos, const float3 dir, const float t,
     //color = 1.0f;
     //diffuse = 1.0f;
     //specular = 0.0f;
-    return color * (ao * (0.05f + shadows * diffuse))
-        + 0.2f * shadows * pow(specular, 80.0f);
+    return color * (ao * (0.07f + shadows * diffuse))
+        + 0.25f * shadows * pow(specular, 64.0f);
 }
 
 /* Return world color from pos to direction starting from distance at resolution indicated by detail */
