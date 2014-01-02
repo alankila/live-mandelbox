@@ -5,7 +5,7 @@
 
     <uses-sdk
         android:minSdkVersion="17"
-        android:targetSdkVersion="18" />
+        android:targetSdkVersion="19" />
 
     <!-- GLES2 is used as proxy for hardware floating point on CPU! -->
     <uses-feature android:glEsVersion="0x00020000" />
