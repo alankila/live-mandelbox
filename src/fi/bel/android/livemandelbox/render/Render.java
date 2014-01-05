@@ -4,11 +4,10 @@ import java.security.SecureRandom;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.renderscript.Allocation;
-import android.renderscript.RenderScript;
-import android.renderscript.Sampler;
+import android.support.v8.renderscript.Allocation;
+import android.support.v8.renderscript.RenderScript;
+import android.support.v8.renderscript.Sampler;
 import android.util.Log;
-import fi.bel.android.livemandelbox.R;
 
 public class Render {
 	private static final SecureRandom RANDOM = new SecureRandom();
@@ -47,30 +46,28 @@ public class Render {
 
 	private static final String TAG = Render.class.getSimpleName();
 
-	private final int dim;
 	private final RenderScript rs;
 	private final ScriptC_render render;
 	private final ScriptC_fxaa fxaa;
 
-	public Render(Context context, float scale, int dim) {
-		this.dim = dim;
+	private int dim;
 
+	private float scale;
+
+	public Render(Context context) {
 		rs = RenderScript.create(context);
 		rs.setMessageHandler(new Ready());
 
-		render = new ScriptC_render(rs, context.getResources(), R.raw.render);
-		render.set_invDim(1.0f / dim);
-		render.set_scale(scale);
+		render = new ScriptC_render(rs);
 		render.set_seed(RANDOM.nextInt());
 		Log.i(TAG, String.format("Render seed: %d", render.get_seed()));
 
-		fxaa = new ScriptC_fxaa(rs, context.getResources(), R.raw.fxaa);
-		fxaa.set_dim(dim);
-		fxaa.set_pixWidth(1.0f / dim);
+		fxaa = new ScriptC_fxaa(rs);
 		fxaa.set_sampler(Sampler.CLAMP_LINEAR(rs));
 	}
 
 	public void prepare() {
+		Log.i(TAG, "Calling RS prepare()");
 		long time1 = System.currentTimeMillis();
 		render.invoke_randomize_position();
 		rs.finish();
@@ -110,5 +107,19 @@ public class Render {
 
 	public int getDim() {
 		return dim;
+	}
+	public void setDim(int dim) {
+		this.dim = dim;
+		render.set_invDim(1.0f / dim);
+		fxaa.set_dim(dim);
+		fxaa.set_pixWidth(1.0f / dim);
+	}
+
+	public float getScale() {
+		return scale;
+	}
+	public void setScale(float scale) {
+		this.scale = scale;
+		render.set_scale(scale);
 	}
 }

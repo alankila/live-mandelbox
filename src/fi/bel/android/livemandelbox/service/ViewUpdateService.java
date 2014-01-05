@@ -66,6 +66,8 @@ public class ViewUpdateService extends IntentService {
 
 	private WakeLock wake;
 
+	private Render render;
+
 	public ViewUpdateService() {
 		super(ViewUpdateService.class.getSimpleName());
 	}
@@ -75,6 +77,7 @@ public class ViewUpdateService extends IntentService {
 		super.onCreate();
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		wake = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MandelBox render");
+		render = new Render(this);
 	}
 
 	@Override
@@ -100,7 +103,8 @@ public class ViewUpdateService extends IntentService {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 			float scale = Float.valueOf(prefs.getString("scale", null));
 			int dim = Integer.valueOf(prefs.getString("dim", null));
-			Render render = new Render(this, scale, dim);
+			render.setScale(scale);
+			render.setDim(dim);
 			render.prepare();
 			makeImage(render, (float) (-Math.PI/8), "0.tmp");
 			makeImage(render, (float) (Math.PI/8), "1.tmp");
