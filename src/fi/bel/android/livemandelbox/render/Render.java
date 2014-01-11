@@ -86,7 +86,6 @@ public class Render {
 		render.invoke_adjust_rot(angle);
 		render.forEach_root(abm1);
 		render.invoke_adjust_rot(-angle);
-		rs.finish();
 		abm1.copyTo(bm1);
 
 		long time2 = System.currentTimeMillis();
@@ -94,11 +93,7 @@ public class Render {
 		Allocation abm2 = Allocation.createFromBitmap(rs, bm2);
 		fxaa.set_in(abm1);
 		fxaa.forEach_root(abm2);
-		rs.finish();
 		abm2.copyTo(bm2);
-		bm1.recycle();
-		abm2.destroy();
-		abm1.destroy();
 
 		long time3 = System.currentTimeMillis();
 		Log.i(TAG, String.format("Completed: %d ms for render, %d ms for fxaa", time2 - time1, time3 - time2));
