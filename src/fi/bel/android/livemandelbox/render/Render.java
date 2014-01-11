@@ -54,6 +54,10 @@ public class Render {
 
 	private float scale;
 
+    private Bitmap bm1, bm2;
+
+    private Allocation abm1, abm2;
+
 	public Render(Context context) {
 		rs = RenderScript.create(context);
 		rs.setMessageHandler(new Ready());
@@ -64,9 +68,7 @@ public class Render {
 
 		fxaa = new ScriptC_fxaa(rs);
 		fxaa.set_sampler(Sampler.CLAMP_LINEAR(rs));
-	}
 
-	public void prepare() {
 		Log.i(TAG, "Calling RS prepare()");
 		long time1 = System.currentTimeMillis();
 		render.invoke_randomize_position();
@@ -77,20 +79,22 @@ public class Render {
 		long time3 = System.currentTimeMillis();
 
 		Log.i(TAG, String.format("Starting position in %d ms, exposure in %d ms", time2 - time1, time3 - time2));
+		
+        bm1 = Bitmap.createBitmap(dim, dim, Bitmap.Config.ARGB_8888);
+		abm1 = Allocation.createFromBitmap(rs, bm1);
+
+		bm2 = Bitmap.createBitmap(dim, dim, Bitmap.Config.ARGB_8888);
+		abm2 = Allocation.createFromBitmap(rs, bm2);
 	}
 
 	public Bitmap getImage(float angle) {
 		long time1 = System.currentTimeMillis();
-		Bitmap bm1 = Bitmap.createBitmap(dim, dim, Bitmap.Config.ARGB_8888);
-		Allocation abm1 = Allocation.createFromBitmap(rs, bm1);
 		render.invoke_adjust_rot(angle);
 		render.forEach_root(abm1);
 		render.invoke_adjust_rot(-angle);
 		abm1.copyTo(bm1);
 
 		long time2 = System.currentTimeMillis();
-		Bitmap bm2 = Bitmap.createBitmap(dim, dim, Bitmap.Config.ARGB_8888);
-		Allocation abm2 = Allocation.createFromBitmap(rs, bm2);
 		fxaa.set_in(abm1);
 		fxaa.forEach_root(abm2);
 		abm2.copyTo(bm2);

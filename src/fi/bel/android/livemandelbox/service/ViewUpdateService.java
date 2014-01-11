@@ -66,8 +66,6 @@ public class ViewUpdateService extends IntentService {
 
 	private WakeLock wake;
 
-	private Render render;
-
 	public ViewUpdateService() {
 		super(ViewUpdateService.class.getSimpleName());
 	}
@@ -77,7 +75,6 @@ public class ViewUpdateService extends IntentService {
 		super.onCreate();
 		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 		wake = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MandelBox render");
-		render = new Render(this);
 	}
 
 	@Override
@@ -103,6 +100,8 @@ public class ViewUpdateService extends IntentService {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 			float scale = Float.valueOf(prefs.getString("scale", null));
 			int dim = Integer.valueOf(prefs.getString("dim", null));
+
+            Render render = new Render(this);
 			render.setScale(scale);
 			render.setDim(dim);
 			render.prepare();
@@ -138,10 +137,8 @@ public class ViewUpdateService extends IntentService {
 				bb.put((byte) (pixel >> 0));
 			}
 		}
-		bitmap.recycle();
 		bb.rewind();
 		ETC1Texture compressed = ETC1Util.compressTexture(bb, dim, dim, 3, dim*3);
-		bb = null;
 
 		FileOutputStream outFile = openFileOutput(name, Context.MODE_PRIVATE);
 		ETC1Util.writeTexture(compressed, outFile);
