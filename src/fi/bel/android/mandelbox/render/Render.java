@@ -1,4 +1,4 @@
-package fi.bel.android.livemandelbox.render;
+package fi.bel.android.mandelbox.render;
 
 import java.security.SecureRandom;
 
@@ -47,27 +47,29 @@ public class Render {
 	private static final String TAG = Render.class.getSimpleName();
 
 	private final RenderScript rs;
+
 	private final ScriptC_render render;
+
 	private final ScriptC_fxaa fxaa;
 
-	private int dim;
+    private final Bitmap bm1, bm2;
 
-	private float scale;
+    private final Allocation abm1, abm2;
 
-    private Bitmap bm1, bm2;
-
-    private Allocation abm1, abm2;
-
-	public Render(Context context) {
+	public Render(Context context, float scale, int dim) {
 		rs = RenderScript.create(context);
 		rs.setMessageHandler(new Ready());
 
 		render = new ScriptC_render(rs);
 		render.set_seed(RANDOM.nextInt());
+		render.set_invDim(1.0f / dim);
 		Log.i(TAG, String.format("Render seed: %d", render.get_seed()));
 
 		fxaa = new ScriptC_fxaa(rs);
 		fxaa.set_sampler(Sampler.CLAMP_LINEAR(rs));
+		fxaa.set_dim(dim);
+		fxaa.set_pixWidth(1.0f / dim);
+		render.set_scale(scale);
 
 		Log.i(TAG, "Calling RS prepare()");
 		long time1 = System.currentTimeMillis();
@@ -79,7 +81,7 @@ public class Render {
 		long time3 = System.currentTimeMillis();
 
 		Log.i(TAG, String.format("Starting position in %d ms, exposure in %d ms", time2 - time1, time3 - time2));
-		
+
         bm1 = Bitmap.createBitmap(dim, dim, Bitmap.Config.ARGB_8888);
 		abm1 = Allocation.createFromBitmap(rs, bm1);
 
@@ -102,23 +104,5 @@ public class Render {
 		long time3 = System.currentTimeMillis();
 		Log.i(TAG, String.format("Completed: %d ms for render, %d ms for fxaa", time2 - time1, time3 - time2));
 		return bm2;
-	}
-
-	public int getDim() {
-		return dim;
-	}
-	public void setDim(int dim) {
-		this.dim = dim;
-		render.set_invDim(1.0f / dim);
-		fxaa.set_dim(dim);
-		fxaa.set_pixWidth(1.0f / dim);
-	}
-
-	public float getScale() {
-		return scale;
-	}
-	public void setScale(float scale) {
-		this.scale = scale;
-		render.set_scale(scale);
 	}
 }

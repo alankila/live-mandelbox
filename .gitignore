@@ -1,4 +1,6 @@
 # generated files
-bin/
-gen/
-res/raw/
+/bin/
+/gen/
+/res/raw/
+/live-mandelbox.jks
+/live-mandelbox.apk

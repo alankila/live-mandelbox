@@ -1,5 +1,5 @@
 
-package fi.bel.android.livemandelbox.service;
+package fi.bel.android.mandelbox.service;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,7 +21,7 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import fi.bel.android.livemandelbox.render.Render;
+import fi.bel.android.mandelbox.render.Render;
 
 public class ViewUpdateService extends IntentService {
 	protected static final String TAG = ViewUpdateService.class.getSimpleName();
@@ -101,10 +101,7 @@ public class ViewUpdateService extends IntentService {
 			float scale = Float.valueOf(prefs.getString("scale", null));
 			int dim = Integer.valueOf(prefs.getString("dim", null));
 
-            Render render = new Render(this);
-			render.setScale(scale);
-			render.setDim(dim);
-			render.prepare();
+            Render render = new Render(this, scale, dim);
 			makeImage(render, (float) (-Math.PI/8), "0.tmp");
 			makeImage(render, (float) (Math.PI/8), "1.tmp");
 
@@ -126,7 +123,7 @@ public class ViewUpdateService extends IntentService {
 
 	private void makeImage(Render render, float angle, String name) throws IOException {
 		Bitmap bitmap = render.getImage(angle);
-		int dim = render.getDim();
+		int dim = bitmap.getWidth();
 
 		ByteBuffer bb = ByteBuffer.allocateDirect(dim * dim * 3);
 		for (int y = 0; y < dim; y += 1) {

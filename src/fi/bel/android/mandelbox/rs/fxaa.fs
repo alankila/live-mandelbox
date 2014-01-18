@@ -1,5 +1,5 @@
 #pragma version(1)
-#pragma rs java_package_name(fi.bel.android.livemandelbox.render)
+#pragma rs java_package_name(fi.bel.android.mandelbox.render)
 
 static const float4 LUM_FACTORS = { 0.299f, 0.587f, 0.114f, 0.0f };
 

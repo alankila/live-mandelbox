@@ -1,4 +1,4 @@
-package fi.bel.android.livemandelbox.service;
+package fi.bel.android.mandelbox.service;
 
 import net.rbgrn.android.glwallpaperservice.GLWallpaperService;
 import android.preference.PreferenceManager;
@@ -6,8 +6,8 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
-import fi.bel.android.livemandelbox.R;
-import fi.bel.android.livemandelbox.render.ProjectionRenderer;
+import fi.bel.android.mandelbox.R;
+import fi.bel.android.mandelbox.render.ProjectionRenderer;
 
 public class WallpaperService extends GLWallpaperService {
 	protected static final String TAG = WallpaperService.class.getSimpleName();

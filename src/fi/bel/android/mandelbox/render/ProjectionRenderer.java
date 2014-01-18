@@ -1,4 +1,4 @@
-package fi.bel.android.livemandelbox.render;
+package fi.bel.android.mandelbox.render;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +14,7 @@ import android.content.Context;
 import android.opengl.ETC1Util;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
-import fi.bel.android.livemandelbox.service.ViewUpdateService;
+import fi.bel.android.mandelbox.service.ViewUpdateService;
 
 public class ProjectionRenderer implements GLSurfaceView.Renderer {
 	protected static final String TAG = ProjectionRenderer.class.getSimpleName();

@@ -1,4 +1,4 @@
-package fi.bel.android.livemandelbox.activity;
+package fi.bel.android.mandelbox.activity;
 
 import java.util.Locale;
 
@@ -7,8 +7,8 @@ import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
-import fi.bel.android.livemandelbox.R;
-import fi.bel.android.livemandelbox.service.ViewUpdateService;
+import fi.bel.android.mandelbox.R;
+import fi.bel.android.mandelbox.service.ViewUpdateService;
 
 public class SettingsActivity extends PreferenceActivity {
 	@Override

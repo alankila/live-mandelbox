@@ -1,5 +1,5 @@
 #pragma version(1)
-#pragma rs java_package_name(fi.bel.android.livemandelbox.render)
+#pragma rs java_package_name(fi.bel.android.mandelbox.render)
 
 static const int BADNESS_RAYS_SQRT = (1 << 6);
 static const int BADNESS_RAYS = (BADNESS_RAYS_SQRT * BADNESS_RAYS_SQRT);

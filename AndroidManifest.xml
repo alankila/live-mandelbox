@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="fi.bel.android.livemandelbox"
+    package="fi.bel.android.mandelbox"
     android:versionCode="30"
     android:versionName="3.0" >
 
