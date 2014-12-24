@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main"><source path="/Users/alankila/Open_Source/live-mandelbox/app/src/main/assets"><file name="0.pkm" path="/Users/alankila/Open_Source/live-mandelbox/app/src/main/assets/0.pkm"/><file name="1.pkm" path="/Users/alankila/Open_Source/live-mandelbox/app/src/main/assets/1.pkm"/></source></dataSet><dataSet config="debug"><source path="/Users/alankila/Open_Source/live-mandelbox/app/src/debug/assets"/></dataSet></merger>

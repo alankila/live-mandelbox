@@ -1,6 +1,7 @@
-# generated files
-/bin/
-/gen/
-/res/raw/
-/live-mandelbox.jks
-/live-mandelbox.apk
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+/keystore.jks
