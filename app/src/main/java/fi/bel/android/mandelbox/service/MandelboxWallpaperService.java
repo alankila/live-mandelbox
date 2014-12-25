@@ -20,10 +20,6 @@ public class MandelboxWallpaperService extends WallpaperService {
 	}
 
 	private class MandelboxWallpaperServiceEngine extends WallpaperService.Engine {
-        private final GLSurfaceView glSurfaceView;
-
-		private final ProjectionRenderer renderer;
-
 		private final GestureDetector gd = new GestureDetector(MandelboxWallpaperService.this, new GestureDetector.OnGestureListener() {
 			@Override
 			public boolean onDown(MotionEvent e) {
@@ -60,6 +56,10 @@ public class MandelboxWallpaperService extends WallpaperService {
 			}
 		});
 
+        private GLSurfaceView glSurfaceView;
+
+        private ProjectionRenderer renderer;
+
         public MandelboxWallpaperServiceEngine() {
 			Log.i(TAG, "Creating wallpaper engine");
             glSurfaceView = new GLSurfaceView(MandelboxWallpaperService.this) {
@@ -68,7 +68,7 @@ public class MandelboxWallpaperService extends WallpaperService {
                     return MandelboxWallpaperServiceEngine.this.getSurfaceHolder();
                 }
             };
-			renderer = new ProjectionRenderer(MandelboxWallpaperService.this);
+            renderer = new ProjectionRenderer(MandelboxWallpaperService.this);
             glSurfaceView.setRenderer(renderer);
 		}
 
@@ -79,7 +79,8 @@ public class MandelboxWallpaperService extends WallpaperService {
 
 		@Override
 		public void onSurfaceCreated(SurfaceHolder holder) {
-			super.onSurfaceCreated(holder);
+            super.onSurfaceCreated(holder);
+            glSurfaceView.surfaceCreated(holder);
 		}
 
 		@Override
@@ -89,5 +90,17 @@ public class MandelboxWallpaperService extends WallpaperService {
 			renderer.setRotationByFraction(xOffset);
             glSurfaceView.invalidate();
 		}
-	}
+
+        @Override
+        public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            super.onSurfaceChanged(holder, format, width, height);
+            glSurfaceView.surfaceChanged(holder, format, width, height);
+        }
+
+        @Override
+        public void onSurfaceDestroyed(SurfaceHolder holder) {
+            super.onSurfaceDestroyed(holder);
+            glSurfaceView.surfaceDestroyed(holder);
+        }
+    }
 }
