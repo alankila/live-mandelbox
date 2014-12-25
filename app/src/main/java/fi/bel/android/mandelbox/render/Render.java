@@ -74,10 +74,11 @@ public class Render {
             render.set_scale(scale);
         } else {
             float randomScale = RANDOM.nextFloat() * 6 + 2;
+            randomScale = (float) Math.sqrt(randomScale);
             randomScale *= RANDOM.nextBoolean() ? -1 : 1;
+            Log.i(TAG, String.format("Random scale value: %.3f", randomScale));
             render.set_scale(randomScale);
         }
-		Log.i(TAG, "Calling RS prepare()");
 		long time1 = System.currentTimeMillis();
 		render.invoke_randomize_position();
 		rs.finish();
@@ -106,8 +107,9 @@ public class Render {
 		fxaa.set_in(abm1);
 		fxaa.forEach_root(abm2);
 		abm2.copyTo(bm2);
-
+        rs.finish();
 		long time3 = System.currentTimeMillis();
+
 		Log.i(TAG, String.format("Completed: %d ms for render, %d ms for fxaa", time2 - time1, time3 - time2));
 		return bm2;
 	}

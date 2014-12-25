@@ -72,7 +72,7 @@ public class MandelboxWallpaperService extends WallpaperService {
         @Override
         public void onTouchEvent(MotionEvent event) {
             if (isPreview()) {
-                Log.i(TAG, "Touch event");
+                //Log.i(TAG, "Touch event");
                 gd.onTouchEvent(event);
             }
         }
@@ -80,7 +80,7 @@ public class MandelboxWallpaperService extends WallpaperService {
         @Override
 		public void onOffsetsChanged(float xOffset, float yOffset, float xOffsetStep, float yOffsetStep, int xPixelOffset, int yPixelOffset) {
             if (!isPreview()) {
-                Log.i(TAG, "Offset changed");
+                //Log.i(TAG, "Offset changed");
                 renderer.setRotationByFraction(xOffset);
                 glSurfaceView.requestRender();
             }
