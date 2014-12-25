@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="scale_strings">
+        <item>Random</item>
         <item>-sqrt(2)</item>
         <item>-sqrt(3)</item>
         <item>-sqrt(4)</item>
@@ -15,6 +16,7 @@
         <item>sqrt(7)</item>
     </string-array>
     <string-array name="scale_values">
+        <item>0</item>
         <item>-1.414214</item>
         <item>-1.732051</item>
         <item>-2.0</item>

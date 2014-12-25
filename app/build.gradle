@@ -6,10 +6,10 @@ android {
 
     defaultConfig {
         applicationId "fi.bel.livemandelbox"
-        minSdkVersion 21
+        minSdkVersion 19
         targetSdkVersion 21
-        versionCode 1
-        versionName "1.0"
+        versionCode 32
+        versionName "3.2"
     }
     buildTypes {
         release {

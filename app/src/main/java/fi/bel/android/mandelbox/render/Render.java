@@ -69,8 +69,14 @@ public class Render {
 		fxaa.set_sampler(Sampler.CLAMP_LINEAR(rs));
 		fxaa.set_dim(dim);
 		fxaa.set_pixWidth(1.0f / dim);
-		render.set_scale(scale);
 
+        if (scale != 0) {
+            render.set_scale(scale);
+        } else {
+            float randomScale = RANDOM.nextFloat() * 6 + 2;
+            randomScale *= RANDOM.nextBoolean() ? -1 : 1;
+            render.set_scale(randomScale);
+        }
 		Log.i(TAG, "Calling RS prepare()");
 		long time1 = System.currentTimeMillis();
 		render.invoke_randomize_position();
