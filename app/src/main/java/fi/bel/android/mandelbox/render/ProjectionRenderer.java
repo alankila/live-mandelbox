@@ -14,6 +14,8 @@ import android.content.Context;
 import android.opengl.ETC1Util;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLU;
+import android.util.Log;
+
 import fi.bel.android.mandelbox.service.ViewUpdateService;
 
 public class ProjectionRenderer implements GLSurfaceView.Renderer {
@@ -30,6 +32,7 @@ public class ProjectionRenderer implements GLSurfaceView.Renderer {
 	private final ByteBuffer leftVertex, rightVertex;
 	private final ByteBuffer leftTexCoord, rightTexCoord;
 	private int[] texture;
+    protected boolean needReload = true;
 
 	public ProjectionRenderer(Context context) {
 		this.context = context;
@@ -72,7 +75,17 @@ public class ProjectionRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onDrawFrame(GL10 gl) {
-		gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+        if (needReload) {
+            try {
+                loadTexture(gl, texture[0], "0.pkm");
+                loadTexture(gl, texture[1], "1.pkm");
+            } catch (IOException ioe) {
+                throw new RuntimeException(ioe);
+            }
+            needReload = false;
+        }
+
+        gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 		gl.glLoadIdentity();
 		gl.glRotatef(upaxisAngle, 0, 0, 1);
 		drawTexture(gl, texture[0], leftVertex, leftTexCoord);
@@ -88,23 +101,19 @@ public class ProjectionRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig cfg) {
-		texture = new int[2];
-	    gl.glGenTextures(2, texture, 0);
+        texture = new int[2];
+        gl.glGenTextures(2, texture, 0);
+        Log.i(TAG, String.format("Loading new textures: %d and %d", texture[0], texture[1]));
 
-	    gl.glEnable(GL10.GL_TEXTURE_2D);
-	    gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
-	    gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
-	    gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+        gl.glEnable(GL10.GL_TEXTURE_2D);
+        gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_NICEST);
+        gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
+        gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
+    }
 
-		ViewUpdateService.aboutToView(context);
-		try {
-			loadTexture(gl, texture[0], "0.pkm");
-			loadTexture(gl, texture[1], "1.pkm");
-		}
-		catch (IOException ioe) {
-			throw new RuntimeException(ioe);
-		}
-	}
+    public void reloadTextures() {
+        needReload = true;
+    }
 
 	@Override
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
@@ -118,8 +127,18 @@ public class ProjectionRenderer implements GLSurfaceView.Renderer {
 	    GLU.gluLookAt(gl, 0, 0, 0, 0, 1, 0, 0, 0, 1);
 	    gl.glMatrixMode(GL10.GL_MODELVIEW);
 	    fovX = (float) (180 * (Math.atan(Math.tan(FOV / 180.0 * Math.PI / 2) * aspect) * 2) / Math.PI);
+
+        reloadTextures();
 	}
 
+    /**
+     * Load a texture from filesystem and bind it to texture
+     *
+     * @param gl
+     * @param tex
+     * @param name
+     * @throws IOException
+     */
 	public void loadTexture(GL10 gl, int tex, String name) throws IOException {
 		gl.glBindTexture(GL10.GL_TEXTURE_2D, tex);
 	    gl.glTexParameterx(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE);
@@ -137,11 +156,21 @@ public class ProjectionRenderer implements GLSurfaceView.Renderer {
 	    textureStream.close();
 	}
 
+    /**
+     * Rotate view angle
+     *
+     * @param dx
+     */
 	public void rotateByPixels(float dx) {
 		upaxisAngle += dx / width * fovX;
 		upaxisAngle = Math.max(Math.min(90 - fovX/2, upaxisAngle), -90 + fovX / 2);
 	}
 
+    /**
+     * Rotate view angle
+     *
+     * @param xOffset
+     */
 	public void setRotationByFraction(float xOffset) {
 		float range = 90 - fovX/2;
 		upaxisAngle = (xOffset - 0.5f) * 2f * range;

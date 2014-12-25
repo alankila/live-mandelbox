@@ -27,8 +27,7 @@ public class MandelboxWallpaperService extends WallpaperService {
 			}
 
 			@Override
-			public boolean onFling(MotionEvent e1, MotionEvent e2,
-					float velocityX, float velocityY) {
+			public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 				return false;
 			}
 
@@ -37,12 +36,9 @@ public class MandelboxWallpaperService extends WallpaperService {
 			}
 
 			@Override
-			public boolean onScroll(MotionEvent e1, MotionEvent e2,
-					float distanceX, float distanceY) {
-				if (isPreview()) {
-					renderer.rotateByPixels(distanceX);
-                    glSurfaceView.invalidate();
-				}
+			public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+    			renderer.rotateByPixels(distanceX);
+                glSurfaceView.requestRender();
 				return true;
 			}
 
@@ -70,36 +66,54 @@ public class MandelboxWallpaperService extends WallpaperService {
             };
             renderer = new ProjectionRenderer(MandelboxWallpaperService.this);
             glSurfaceView.setRenderer(renderer);
+            glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		}
 
-		@Override
-		public void onTouchEvent(MotionEvent event) {
-			gd.onTouchEvent(event);
+        @Override
+        public void onTouchEvent(MotionEvent event) {
+            if (isPreview()) {
+                Log.i(TAG, "Touch event");
+                gd.onTouchEvent(event);
+            }
+        }
+
+        @Override
+		public void onOffsetsChanged(float xOffset, float yOffset, float xOffsetStep, float yOffsetStep, int xPixelOffset, int yPixelOffset) {
+            if (!isPreview()) {
+                Log.i(TAG, "Offset changed");
+                renderer.setRotationByFraction(xOffset);
+                glSurfaceView.requestRender();
+            }
 		}
 
-		@Override
-		public void onSurfaceCreated(SurfaceHolder holder) {
+        @Override
+        public void onSurfaceCreated(SurfaceHolder holder) {
             super.onSurfaceCreated(holder);
+            Log.i(TAG, "Surface created");
             glSurfaceView.surfaceCreated(holder);
-		}
-
-		@Override
-		public void onOffsetsChanged(float xOffset, float yOffset,
-				float xOffsetStep, float yOffsetStep, int xPixelOffset,
-				int yPixelOffset) {
-			renderer.setRotationByFraction(xOffset);
-            glSurfaceView.invalidate();
-		}
+        }
 
         @Override
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             super.onSurfaceChanged(holder, format, width, height);
+            Log.i(TAG, "Surface changed");
             glSurfaceView.surfaceChanged(holder, format, width, height);
+        }
+
+        @Override
+        public void onVisibilityChanged(boolean visible) {
+            super.onVisibilityChanged(visible);
+            Log.i(TAG, String.format("Surface about to become visible: %s", visible));
+            if (visible) {
+                ViewUpdateService.aboutToView(MandelboxWallpaperService.this);
+                renderer.reloadTextures();
+            }
         }
 
         @Override
         public void onSurfaceDestroyed(SurfaceHolder holder) {
             super.onSurfaceDestroyed(holder);
+            Log.i(TAG, "Surface destroyed");
             glSurfaceView.surfaceDestroyed(holder);
         }
     }
