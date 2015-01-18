@@ -20,6 +20,7 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
+import android.renderscript.Allocation;
 import android.util.Log;
 import fi.bel.android.mandelbox.render.Render;
 
@@ -123,19 +124,19 @@ public class ViewUpdateService extends IntentService {
 
 	private void makeImage(Render render, float angle, String name) throws IOException {
 		Bitmap bitmap = render.getImage(angle);
-		int dim = bitmap.getWidth();
+        int dim = bitmap.getHeight();
 
 		ByteBuffer bb = ByteBuffer.allocateDirect(dim * dim * 3);
 		for (int y = 0; y < dim; y += 1) {
 			for (int x = 0; x < dim; x += 1) {
-				int pixel = bitmap.getPixel(x, y);
-				bb.put((byte) (pixel >> 16));
-				bb.put((byte) (pixel >> 8));
-				bb.put((byte) (pixel >> 0));
+                int value = bitmap.getPixel(x, y);
+				bb.put((byte) (value >> 16));
+				bb.put((byte) (value >> 8));
+				bb.put((byte) value);
 			}
 		}
 		bb.rewind();
-		ETC1Texture compressed = ETC1Util.compressTexture(bb, dim, dim, 3, dim*3);
+		ETC1Texture compressed = ETC1Util.compressTexture(bb, dim, dim, 3, dim * 3);
 
 		FileOutputStream outFile = openFileOutput(name, Context.MODE_PRIVATE);
 		ETC1Util.writeTexture(compressed, outFile);

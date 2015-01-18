@@ -5,8 +5,10 @@ import java.security.SecureRandom;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.renderscript.Allocation;
+import android.renderscript.Element;
 import android.renderscript.RenderScript;
 import android.renderscript.Sampler;
+import android.renderscript.Script;
 import android.util.Log;
 
 public class Render {
@@ -52,7 +54,7 @@ public class Render {
 
 	private final ScriptC_fxaa fxaa;
 
-    private final Bitmap bm1, bm2;
+    private final Bitmap bm2;
 
     private final Allocation abm1, abm2;
 
@@ -89,24 +91,27 @@ public class Render {
 
 		Log.i(TAG, String.format("Starting position in %d ms, exposure in %d ms", time2 - time1, time3 - time2));
 
-        bm1 = Bitmap.createBitmap(dim, dim, Bitmap.Config.ARGB_8888);
-		abm1 = Allocation.createFromBitmap(rs, bm1);
-
-		bm2 = Bitmap.createBitmap(dim, dim, Bitmap.Config.ARGB_8888);
-		abm2 = Allocation.createFromBitmap(rs, bm2);
+        bm2 = Bitmap.createBitmap(dim, dim, Bitmap.Config.ARGB_8888);
+		abm1 = Allocation.createFromBitmap(rs, bm2);
+        abm2 = Allocation.createFromBitmap(rs, bm2);
 	}
 
 	public Bitmap getImage(float angle) {
 		long time1 = System.currentTimeMillis();
 		render.invoke_adjust_rot(angle);
-		render.forEach_root(abm1);
+        Script.LaunchOptions lc = new Script.LaunchOptions();
+        for (int y = 0; y < bm2.getHeight(); y += 256) {
+            lc.setY(y, y + 255);
+            Log.i(TAG, String.format("Rendering chunk from %d to %d", lc.getYStart(), lc.getYEnd()));
+            render.forEach_root(abm1, lc);
+            rs.finish();
+        }
 		render.invoke_adjust_rot(-angle);
-		abm1.copyTo(bm1);
 
 		long time2 = System.currentTimeMillis();
 		fxaa.set_in(abm1);
 		fxaa.forEach_root(abm2);
-		abm2.copyTo(bm2);
+        abm2.copyTo(bm2);
         rs.finish();
 		long time3 = System.currentTimeMillis();
 
