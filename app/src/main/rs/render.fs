@@ -64,12 +64,10 @@ static float intersectMandelbox(const float3 pos, const float3 dir, float t, con
     while (t < 10.0f) {
         /* dt is the minimum safe estimate. */
         float dt = mandelboxDistance(pos + dir * t) * 0.5f;
-        float desiredDt = detail * t;
-        if (dt < desiredDt) {
-        	t -= (desiredDt - dt);
+        t += dt;
+        if (dt < detail * t) {
             break;
         }
-        t += dt;
     }
 
     return t;
@@ -128,12 +126,12 @@ static float3 computeMandelboxColor(float3 pos, const float3 dir, const float t,
 	float3 lightDir = normalize(lightPos - pos);
     float dt = t * detail;
 
-    float dx1 = mandelboxDistance(pos - (float3) { dt * 0.5f, 0, 0 });
-    float dx2 = mandelboxDistance(pos + (float3) { dt * 0.5f, 0, 0 });
-    float dy1 = mandelboxDistance(pos - (float3) { 0, dt * 0.5f, 0 });
-    float dy2 = mandelboxDistance(pos + (float3) { 0, dt * 0.5f, 0 });
-    float dz1 = mandelboxDistance(pos - (float3) { 0, 0, dt * 0.5f });
-    float dz2 = mandelboxDistance(pos + (float3) { 0, 0, dt * 0.5f });
+    float dx1 = mandelboxDistance(pos - (float3) { dt * 0.25f, 0, 0 });
+    float dx2 = mandelboxDistance(pos + (float3) { dt * 0.25f, 0, 0 });
+    float dy1 = mandelboxDistance(pos - (float3) { 0, dt * 0.25f, 0 });
+    float dy2 = mandelboxDistance(pos + (float3) { 0, dt * 0.25f, 0 });
+    float dz1 = mandelboxDistance(pos - (float3) { 0, 0, dt * 0.25f });
+    float dz2 = mandelboxDistance(pos + (float3) { 0, 0, dt * 0.25f });
     float3 norm = normalize((float3) { dx2 - dx1, dy2 - dy1, dz2 - dz1 });
     
     /* Real world-space AO estimate */

@@ -73,7 +73,7 @@ public class Render {
         if (scale != 0) {
             render.set_scale(scale);
         } else {
-            float randomScale = RANDOM.nextFloat() * 6 + 2;
+            float randomScale = RANDOM.nextFloat() * 5 + (1.5f * 1.5f);
             randomScale = (float) Math.sqrt(randomScale);
             randomScale *= RANDOM.nextBoolean() ? -1 : 1;
             Log.i(TAG, String.format("Random scale value: %.3f", randomScale));

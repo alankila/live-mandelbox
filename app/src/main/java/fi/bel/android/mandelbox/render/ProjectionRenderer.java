@@ -1,5 +1,7 @@
 package fi.bel.android.mandelbox.render;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.Buffer;
@@ -152,6 +154,7 @@ public class ProjectionRenderer implements GLSurfaceView.Renderer {
 	    } else {
 	    	textureStream = context.getAssets().open(name);
 	    }
+
 	    ETC1Util.loadTexture(GL10.GL_TEXTURE_2D, 0, 0, GL10.GL_RGB, GL10.GL_UNSIGNED_SHORT_5_6_5, textureStream);
 	    textureStream.close();
 	}

@@ -107,6 +107,7 @@ public class MandelboxWallpaperService extends WallpaperService {
             if (visible) {
                 ViewUpdateService.aboutToView(MandelboxWallpaperService.this);
                 renderer.reloadTextures();
+                glSurfaceView.requestRender();
             }
         }
 
