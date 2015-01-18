@@ -100,8 +100,10 @@ public class Render {
 		long time1 = System.currentTimeMillis();
 		render.invoke_adjust_rot(angle);
         Script.LaunchOptions lc = new Script.LaunchOptions();
-        for (int y = 0; y < bm2.getHeight(); y += 256) {
-            lc.setY(y, y + 255);
+        /* Using 256k pixel budget per invocation -- experimentally determined from Nexus 5 */
+        int pixelBudget = Math.min(bm2.getHeight(), 256 * 1024 / bm2.getWidth());
+        for (int y = 0; y < bm2.getHeight(); y += pixelBudget) {
+            lc.setY(y, y + pixelBudget);
             Log.i(TAG, String.format("Rendering chunk from %d to %d", lc.getYStart(), lc.getYEnd()));
             render.forEach_root(abm1, lc);
             rs.finish();
